@@ -8,7 +8,6 @@
     <meta content="Moms Moonpie - Admin" name="description" />
     <!-- App favicon -->
     <link rel="shortcut icon" href="{{ URL::asset('images/favicon.ico') }}">
-
     @stack('css')
     <!-- Bootstrap Css -->
     <link href="{{ URL::asset('build/css/bootstrap.min.css') }}" id="bootstrap-style" rel="stylesheet" type="text/css" />
@@ -24,7 +23,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 
 </head>
-
 <body data-layout="detached" data-topbar="colored">
     <!-- Begin page -->
     <div class="container-fluid">
@@ -37,10 +35,8 @@
                 </div>
                 @include('layouts.admin.partials.footer')
             </div>
-
         </div>
     </div>
-
     @include('layouts.admin.partials.right-sidebar')
     @include('layouts.admin.vendor-scripts')
 </body>
