@@ -76,8 +76,8 @@
                         </div>
                     </div>
                     <div class="mt-5 text-center">
-                        {{-- <p>Don't have an account ? <a href="{{ route('register') }}" class="fw-medium text-primary"> Signup
-                                now </a> </p> --}}
+                         <p>Don't have an account ? <a href="{{ route('register') }}" class="fw-medium text-primary"> Signup
+                                now </a> </p> 
                         <p>©
                             {{ date('Y') }} Webyou Technologies. Crafted with <i class="mdi mdi-heart text-danger"></i> by
                             Jay Soni

@@ -38,12 +38,8 @@ class PaymentController extends Controller
 {
     Log::info('payment_init reached');
     Log::info(' CSRF token from form:', [$request->input('_token')]);
-
-    // Extract and store form data
     $data = $request->all();
     session()->put("checkout_form", $data);
-
-    // Validate essential inputs
     $phone = $data['contact_number'] ?? '';
     $price = isset($data['total_amount']) ? (float)$data['total_amount'] : 0;
 
@@ -52,10 +48,9 @@ class PaymentController extends Controller
         return back()->with('error', 'Invalid total amount.');
     }
 
-    $amount = intval($price * 100); // Convert to paisa
+    $amount = intval($price * 100);
 
     try {
-        // Payload to send to PhonePe
         $normalPayLoad = [
             "merchantId"            => 'MOMSMONLINE',
             "merchantTransactionId" => uniqid(),
@@ -71,23 +66,26 @@ class PaymentController extends Controller
         ];
          Log::info('Raw Payload:', $normalPayLoad);
         $encode = base64_encode(json_encode($normalPayLoad));
-        $finalXverify = self::get_checksum_value_request($encode);
-         $client = new Client();
-            $response = $client->post(env('PHONEPE_BASE_URL'), [
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'X-VERIFY' => $finalXverify,
-            ],
-            'body' => json_encode(['request' => $encode]),
-        ]);
+        $path = '/pg/v1/pay'; 
+        $checksum = hash('sha256', $encode . $path . env('PHONEPE_SALT_KEY'));
+        $finalXverify = $checksum . "###" . env('PHONEPE_SALT_INDEX');
+
+        $client = new Client();
+        $response = $client->post('https://api-preprod.phonepe.com/apis/pg-sandbox' . $path, [
+        'headers' => [
+        'Content-Type' => 'application/json',
+        'X-VERIFY' => $finalXverify,
+        ],
+        'body' => json_encode(['request' => $encode]),
+      ]);
         $responseBody = json_decode($response->getBody(), true);
 
-        Log::info('📦 PhonePe Response:', $responseBody);
+        Log::info('PhonePe Response:', $responseBody);
 
         $redirectUrl = $responseBody['data']['instrumentResponse']['redirectInfo']['url'] ?? null;
 
         if (!$redirectUrl || !is_string($redirectUrl)) {
-            Log::error('❌ Invalid or missing redirect URL from PhonePe:', ['url' => $redirectUrl]);
+            Log::error('Invalid or missing redirect URL from PhonePe:', ['url' => $redirectUrl]);
             return back()->with('error', 'Invalid response from payment gateway.');
         }
         $customer = $this->authCustomer();
@@ -99,7 +97,7 @@ class PaymentController extends Controller
         return redirect()->to($redirectUrl);
 
     } catch (\Exception $e) {
-        Log::error('❌ Payment Error: ' . $e->getMessage());
+        Log::error('Payment Error: ' . $e->getMessage());
         return back()->with('error', 'Something went wrong. Please try again later.');
     }
 }
