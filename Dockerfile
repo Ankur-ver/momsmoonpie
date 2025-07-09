@@ -30,10 +30,6 @@ COPY . .
 
 # Install Laravel dependencies
 RUN composer install --optimize-autoloader --no-dev
-# After composer install
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
 # Set permissions (Laravel-specific)
 RUN chown -R www-data:www-data /var/www \
     && chmod -R ug+rwx /var/www/storage /var/www/bootstrap/cache
