@@ -30,11 +30,13 @@ COPY . .
 
 # Install Laravel dependencies
 RUN composer install --optimize-autoloader --no-dev
-
-# Set permissions
+# After composer install
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+# Set permissions (Laravel-specific)
 RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
-
+    && chmod -R ug+rwx /var/www/storage /var/www/bootstrap/cache
 # Copy Nginx and Supervisor configs
 COPY ./deploy/render/nginx.conf /etc/nginx/sites-available/default
 COPY ./deploy/render/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
